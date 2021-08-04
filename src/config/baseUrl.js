@@ -1,1 +1,1 @@
-export const baseUrl = "https://listicle-backend.herokuapp.com";
+export const baseUrl = "http://www.omdbapi.com/?apikey=922db138&";

@@ -1,37 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "@material-ui/core";
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 import { getCalls, getCall } from "../../api/apiCalls";
+import Home from "./home";
 
 const HomeView = () => {
-  const [items, setItems] = useState([]);
-  const [item, setItem] = useState([]);
-  useEffect(() => {
-    (async () => {
-      const getAllItems = await getCalls();
-      setItems(getAllItems.data);
-      console.log(items);
-    })();
-  }, []);
-
-  const handleClick = async slug => {
-    const getItem = await getCall(slug);
-    setItem(getItem);
-    console.log(item);
-  };
+    const [movie, setMovie] = useState(null)
+    const formik = useFormik({
+        initialValues: { title: ''},
+        validationSchema: Yup.object({
+            title: Yup.string()
+                .required('Title required'),
+        }),
+        onSubmit: async (values) => {
+            const { title } = values;
+           const movieDetails =  await getCalls(title);
+           setMovie(movieDetails)
+        },
+    });
   return (
     <div>
-      Home
-      <br />
-      <div>
-        {items.map(item => (
-          <div>{item.title}</div>
-        ))}
-      </div>
-      <div>
-        <Button variant="contained" onClick={() => handleClick("javascript")}>
-          Default
-        </Button>
-      </div>
+      <Home
+          title={formik.values.title}
+          onChange={formik.handleChange}
+          onSubmit={formik.handleSubmit}
+          onBlur={formik.handleBlur}
+          errors={formik.errors}
+          touched={formik.touched}
+      />
+        {movie?.Title &&(
+            <>
+                <div>Movie Title: {movie.Title}</div>
+                <div>Released Year: {movie.Year}</div>
+                <div>Movie Plot: {movie?.Plot}</div>
+                {movie.Genre.split(',').map(item =>(
+                    <div>Genre: {item}</div>
+                ))}
+
+            </>
+
+        )}
+
+        {movie?.Error &&(
+            <div>{movie.Error}</div>
+        )}
+
+
     </div>
   );
 };
